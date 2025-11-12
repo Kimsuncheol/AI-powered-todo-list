@@ -25,7 +25,7 @@ export default function Header() {
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
   const open = Boolean(anchorEl);
   const hideSearchAndCta =
-    pathname === "/auth/signin" || pathname === "/auth/signup";
+    pathname === "/signin" || pathname === "/signup";
 
   const handleMenuClose = () => setAnchorEl(null);
 
