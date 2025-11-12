@@ -1,18 +1,9 @@
-import SignUpForm from "@/components/forms/SignUpForm";
-import { Stack, Typography } from "@mui/material";
+import SignUpForm from "@/components/auth/SignUpForm";
 
 export default function SignUpPage() {
   return (
-    <Stack spacing={2} sx={{
-      height: 'calc(100vh - 72px)',
-      display: 'flex', 
-      justifyContent: 'center',
-      alignItems: 'center'
-    }}>
-      <Typography variant="overline" color="text.secondary">
-        Create your workspace
-      </Typography>
+    <div className="min-h-screen flex items-center justify-center p-6">
       <SignUpForm />
-    </Stack>
+    </div>
   );
 }

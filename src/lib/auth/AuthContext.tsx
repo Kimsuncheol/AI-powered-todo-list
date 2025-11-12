@@ -7,45 +7,38 @@ import React, {
   useMemo,
   useState,
 } from "react";
-import { AuthAPI } from "@/lib/api/auth";
-import type {
-  SignInRequest,
-  SignUpRequest,
-  UserPublic,
-} from "@/types/auth";
+import {
+  fetchCurrentUser,
+  initCsrf,
+  signIn as signInRequest,
+  signOut as signOutRequest,
+  signUp as signUpRequest,
+} from "@/lib/api/auth";
+import { CSRF_COOKIE_NAME, getCookie } from "@/lib/api/http";
+import type { SignInIn, SignUpIn, UserSummary } from "@/lib/api/types";
 
 export type AuthContextType = {
-  user: UserPublic | null;
+  user: UserSummary | null;
   hydrated: boolean;
   csrf: string | null;
-  signIn: (dto: SignInRequest) => Promise<void>;
-  signUp: (dto: SignUpRequest) => Promise<void>;
+  signIn: (dto: SignInIn) => Promise<void>;
+  signUp: (dto: SignUpIn) => Promise<void>;
   signOut: () => Promise<void>;
 };
 
 export const AuthContext = createContext<AuthContextType | null>(null);
 
-const CSRF_COOKIE_NAME = "csrf_token";
-
-function getCsrfFromCookie(): string | null {
-  if (typeof document === "undefined") return null;
-  const match = document.cookie.match(
-    new RegExp(`(?:^|; )${CSRF_COOKIE_NAME}=([^;]+)`)
-  );
-  return match ? decodeURIComponent(match[1]) : null;
-}
-
 async function ensureCsrfCookie(): Promise<string> {
-  let token = getCsrfFromCookie();
+  let token = getCookie(CSRF_COOKIE_NAME);
   if (token) return token;
 
   try {
-    await AuthAPI.me();
+    await initCsrf();
   } catch {
-    // unauthenticated, but backend may still set csrf cookie
+    // ignore failures, we just need the cookie
   }
 
-  token = getCsrfFromCookie();
+  token = getCookie(CSRF_COOKIE_NAME);
   if (!token) {
     throw new Error("Missing CSRF token");
   }
@@ -55,7 +48,7 @@ async function ensureCsrfCookie(): Promise<string> {
 export const AuthProvider: React.FC<React.PropsWithChildren> = ({
   children,
 }) => {
-  const [user, setUser] = useState<UserPublic | null>(null);
+  const [user, setUser] = useState<UserSummary | null>(null);
   const [hydrated, setHydrated] = useState(false);
   const [csrf, setCsrf] = useState<string | null>(null);
 
@@ -63,13 +56,13 @@ export const AuthProvider: React.FC<React.PropsWithChildren> = ({
     let mounted = true;
     const hydrate = async () => {
       try {
-        const env = await AuthAPI.me();
-        if (mounted) setUser(env.data);
+        const env = await fetchCurrentUser();
+        if (mounted) setUser(env.user);
       } catch {
         // user not signed in or session expired
       } finally {
         if (mounted) {
-          setCsrf(getCsrfFromCookie());
+          setCsrf(getCookie(CSRF_COOKIE_NAME) ?? null);
           setHydrated(true);
         }
       }
@@ -80,25 +73,25 @@ export const AuthProvider: React.FC<React.PropsWithChildren> = ({
     };
   }, []);
 
-  const signIn = useCallback(async (dto: SignInRequest) => {
+  const signIn = useCallback(async (dto: SignInIn) => {
     const token = await ensureCsrfCookie();
-    const env = await AuthAPI.signin(dto, token);
-    setUser(env.data);
-    setCsrf(getCsrfFromCookie());
+    const env = await signInRequest(dto);
+    setUser(env.user);
+    setCsrf(getCookie(CSRF_COOKIE_NAME) ?? token);
   }, []);
 
-  const signUp = useCallback(async (dto: SignUpRequest) => {
+  const signUp = useCallback(async (dto: SignUpIn) => {
     const token = await ensureCsrfCookie();
-    const env = await AuthAPI.signup(dto, token);
-    setUser(env.data);
-    setCsrf(getCsrfFromCookie());
+    const env = await signUpRequest(dto);
+    setUser(env.user);
+    setCsrf(getCookie(CSRF_COOKIE_NAME) ?? token);
   }, []);
 
   const signOut = useCallback(async () => {
     const token = await ensureCsrfCookie();
-    await AuthAPI.signout(token);
+    await signOutRequest();
     setUser(null);
-    setCsrf(getCsrfFromCookie());
+    setCsrf(getCookie(CSRF_COOKIE_NAME) ?? token);
   }, []);
 
   const value = useMemo(

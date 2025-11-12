@@ -1,18 +1,9 @@
-import SignInForm from "@/components/forms/SignInForm";
-import { Stack, Typography } from "@mui/material";
+import SignInForm from "@/components/auth/SignInForm";
 
 export default function SignInPage() {
   return (
-    <Stack spacing={2} sx={{
-      height: 'calc(100vh - 72px)',
-      display: 'flex',
-      justifyContent: 'center',
-      alignItems: 'center'
-    }}>
-      <Typography variant="overline" color="text.secondary">
-        Welcome back
-      </Typography>
+    <div className="flex items-center justify-center p-6" style={{height: 'calc(100vh - 72px'}}>
       <SignInForm />
-    </Stack>
+    </div>
   );
 }

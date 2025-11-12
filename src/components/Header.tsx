@@ -24,7 +24,8 @@ export default function Header() {
   const { user, signOut } = useAuth();
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
   const open = Boolean(anchorEl);
-  const hideSearchAndCta = pathname === "/signin" || pathname === "/signup";
+  const hideSearchAndCta =
+    pathname === "/auth/signin" || pathname === "/auth/signup";
 
   const handleMenuClose = () => setAnchorEl(null);
 
@@ -33,7 +34,7 @@ export default function Header() {
   const handleSignOut = async () => {
     handleMenuClose();
     await signOut();
-    router.push("/signin");
+    router.push("/auth/signin");
   };
 
   return (
