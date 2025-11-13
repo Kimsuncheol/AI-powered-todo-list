@@ -14,10 +14,10 @@ export default function HomePage() {
         reminders, and collaborative insights.
       </Typography>
       <Stack direction={{ xs: "column", sm: "row" }} spacing={2}>
-        <Button component={Link} href="/auth/signup" variant="contained">
+        <Button component={Link} href="/signup" variant="contained">
           Get started
         </Button>
-        <Button component={Link} href="/auth/signin" variant="outlined">
+        <Button component={Link} href="/signin" variant="outlined">
           I already have an account
         </Button>
       </Stack>

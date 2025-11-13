@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useMemo, useState } from "react";
 import {
   Alert,
   Box,
@@ -21,7 +21,6 @@ import VisibilityOff from "@mui/icons-material/VisibilityOff";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useAuth } from "@/hooks/useAuth";
-import { initCsrf } from "@/lib/api/auth";
 
 export default function SignUpForm() {
   const router = useRouter();
@@ -32,10 +31,7 @@ export default function SignUpForm() {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-
-  useEffect(() => {
-    void initCsrf();
-  }, []);
+  const [status, setStatus] = useState<{ type: "success" | "error"; message: string } | null>(null);
 
   const passwordRules = useMemo(
     () => [
@@ -64,13 +60,25 @@ export default function SignUpForm() {
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
+    setStatus(null);
     if (passwordsMismatch || emailInvalid) {
+      if (passwordsMismatch) {
+        setStatus({ type: "error", message: "Passwords do not match." });
+      } else if (emailInvalid) {
+        setStatus({ type: "error", message: "Please enter a valid email address." });
+      }
       return;
     }
     const result = await signUp({ email, password, name });
     if (result.ok) {
+      setStatus({ type: "success", message: "Account created successfully. Redirecting..." });
       router.push("/");
+      return;
     }
+    setStatus({
+      type: "error",
+      message: result.error ?? "Unable to sign up. Please try again.",
+    });
   };
 
   return (
@@ -88,7 +96,11 @@ export default function SignUpForm() {
         Create your account
       </Typography>
 
-      {error ? <Alert severity="error">{error}</Alert> : null}
+      {status ? (
+        <Alert severity={status.type}>{status.message}</Alert>
+      ) : error ? (
+        <Alert severity="error">{error}</Alert>
+      ) : null}
 
       <TextField
         label="Name"

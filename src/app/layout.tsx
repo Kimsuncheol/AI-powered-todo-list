@@ -22,7 +22,7 @@ export default function RootLayout({
           <CssBaseline />
           <AuthProvider>
             <Header />
-            <Container component="main" sx={{ py: 4 }}>
+            <Container component="main" sx={{ py: 4, minHeight: 'calc(100vh - 120px)' }}>
               {children}
             </Container>
           </AuthProvider>

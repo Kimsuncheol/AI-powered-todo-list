@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import {
   Alert,
   Box,
@@ -18,7 +18,6 @@ import {
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useAuth } from "@/hooks/useAuth";
-import { initCsrf } from "@/lib/api/auth";
 import Visibility from "@mui/icons-material/Visibility";
 import VisibilityOff from "@mui/icons-material/VisibilityOff";
 
@@ -29,10 +28,6 @@ export default function SignInForm() {
   const [password, setPassword] = useState("");
   const [remember, setRemember] = useState(true);
   const [showPassword, setShowPassword] = useState(false);
-
-  useEffect(() => {
-    void initCsrf();
-  }, []);
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
@@ -49,24 +44,24 @@ export default function SignInForm() {
 
   return (
     <Box component="form" onSubmit={handleSubmit} sx={{ width: '100%', maxWidth: '28rem', '& > * + *': { marginTop: '16px' } }}>
-        <Typography variant="h5" fontWeight={600}>
-          Sign in
-        </Typography>
+      <Typography variant="h5" fontWeight={600}>
+        Sign in
+      </Typography>
 
-        {error ? <Alert severity="error">{error}</Alert> : null}
+      {error ? <Alert severity="error">{error}</Alert> : null}
 
-        <TextField
-          label="Email"
-          type="email"
-          value={email}
-          onChange={(event) => setEmail(event.target.value)}
-          fullWidth
-          autoComplete="email"
-          required
-          error={!!fieldErrors?.email}
-          helperText={fieldErrors?.email}
-          sx={{ marginTop: '16px' }}
-        />
+      <TextField
+        label="Email"
+        type="email"
+        value={email}
+        onChange={(event) => setEmail(event.target.value)}
+        fullWidth
+        autoComplete="email"
+        required
+        error={!!fieldErrors?.email}
+        helperText={fieldErrors?.email}
+        sx={{ marginTop: '16px' }}
+      />
 
       <TextField
         label="Password"

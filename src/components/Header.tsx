@@ -12,6 +12,7 @@ import {
   Tooltip,
 } from "@mui/material";
 import AccountCircleIcon from "@mui/icons-material/AccountCircle";
+import AddIcon from "@mui/icons-material/Add";
 import Link from "next/link";
 import { useRouter, usePathname } from "next/navigation";
 import SearchBar from "./SearchBar";
@@ -53,6 +54,15 @@ export default function Header() {
 
         {user ? (
           <>
+            <Button
+              component={Link}
+              href="/tasks"
+              variant="outlined"
+              startIcon={<AddIcon />}
+              size="small"
+            >
+              Tasks
+            </Button>
             <Tooltip title={user.email} arrow>
               <IconButton
                 onClick={(event) => setAnchorEl(event.currentTarget)}

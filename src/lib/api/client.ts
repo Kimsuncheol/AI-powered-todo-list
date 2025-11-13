@@ -8,14 +8,9 @@ export class ApiError extends Error {
   }
 }
 
-type ApiRequestInit = RequestInit & { csrf?: string };
-
-export async function api<T>(path: string, init?: ApiRequestInit): Promise<T> {
+export async function api<T>(path: string, init?: RequestInit): Promise<T> {
   const headers = new Headers(init?.headers ?? {});
   headers.set("Content-Type", "application/json");
-  if (init?.csrf) {
-    headers.set("X-CSRF-Token", init.csrf);
-  }
 
   const res = await fetch(path, {
     method: init?.method ?? "GET",

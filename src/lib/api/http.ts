@@ -5,30 +5,6 @@ export const API_BASE_URL =
   process.env.NEXT_PUBLIC_API_URL ??
   "http://localhost:8000";
 
-export const CSRF_COOKIE_NAME = "csrf_token";
-
-export function getCookie(name: string): string | undefined {
-  if (typeof document === "undefined") return undefined;
-  const match = document.cookie.match(
-    new RegExp(`(?:^|; )${name.replace(/[-[\]/{}()*+?.\\^$|]/g, "\\$&")}=([^;]*)`)
-  );
-  return match ? decodeURIComponent(match[1]) : undefined;
-}
-
-export async function bootstrapCsrf(): Promise<void> {
-  const res = await fetch(`${API_BASE_URL}/auth/csrf`, {
-    method: "GET",
-    credentials: "include",
-  });
-
-  if (!res.ok && res.status !== 204) {
-    const text = await res.text().catch(() => "");
-    throw new Error(
-      `CSRF bootstrap failed (${res.status}): ${text || res.statusText || "unknown error"}`
-    );
-  }
-}
-
 async function parseError(res: Response): Promise<never> {
   let message = `Request failed (${res.status})`;
   let details: ValidationDetail[] | undefined;
@@ -79,36 +55,12 @@ async function readBody<T>(res: Response): Promise<T> {
   }
 }
 
-type ApiFetchInit = RequestInit & {
-  requireCsrf?: boolean;
-  retryOnCsrf?: boolean;
-};
-
-export async function apiFetch<T>(
-  path: string,
-  init: ApiFetchInit = {}
-): Promise<T> {
+export async function apiFetch<T>(path: string, init: RequestInit = {}): Promise<T> {
   const url = path.startsWith("http") ? path : `${API_BASE_URL}${path}`;
   const headers = new Headers(init.headers ?? {});
 
   if (init.body && !headers.has("Content-Type")) {
     headers.set("Content-Type", "application/json");
-  }
-
-  const ensureCsrf = async () => {
-    let token = getCookie(CSRF_COOKIE_NAME);
-    if (!token) {
-      await bootstrapCsrf();
-      token = getCookie(CSRF_COOKIE_NAME);
-    }
-    if (!token) {
-      throw new Error("Missing CSRF token");
-    }
-    headers.set("X-CSRF-Token", token);
-  };
-
-  if (init.requireCsrf) {
-    await ensureCsrf();
   }
 
   const execute = () =>
@@ -118,13 +70,7 @@ export async function apiFetch<T>(
       credentials: "include",
     });
 
-  let res = await execute();
-
-  if (!res.ok && init.requireCsrf && init.retryOnCsrf !== false && (res.status === 401 || res.status === 403)) {
-    await bootstrapCsrf();
-    await ensureCsrf();
-    res = await execute();
-  }
+  const res = await execute();
 
   if (res.status === 204) {
     return undefined as T;
