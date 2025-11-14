@@ -1,10 +1,11 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { Alert, Box, CircularProgress } from "@mui/material";
+import { Alert, Box, CircularProgress, Container } from "@mui/material";
 import { useParams } from "next/navigation";
 import { TaskWorkspace } from "@/components/tasks/TaskWorkspace";
-import { TasksAPI } from "@/lib/api/tasks";
+import { TasksAiChatWidget } from "@/components/tasks/TasksAiChatWidget";
+import { TasksAPI, type TaskUpdatePayload } from "@/lib/api/tasks";
 import type { Task } from "@/types/task";
 
 export default function TaskDetailPage() {
@@ -42,7 +43,7 @@ export default function TaskDetailPage() {
   }, [taskId]);
 
   const handleSave = useCallback(
-    async (payload: Partial<Task>) => {
+    async (payload: TaskUpdatePayload) => {
       if (!taskId) return;
       const response = await TasksAPI.update(taskId, payload);
       setTask(response.data);
@@ -59,24 +60,29 @@ export default function TaskDetailPage() {
   }
 
   if (error) {
-    return (
-      <Alert severity="error">
-        {error}
-      </Alert>
-    );
+    return <Alert severity="error">{error}</Alert>;
   }
 
   if (!task) {
-    return (
-      <Alert severity="warning">Task not found.</Alert>
-    );
+    return <Alert severity="warning">Task not found.</Alert>;
   }
 
   return (
-    <TaskWorkspace
-      mode="edit"
-      initialTask={task}
-      onSave={handleSave}
-    />
+    <Container maxWidth="lg" sx={{ py: 3 }}>
+      <Box
+        sx={{
+          display: "flex",
+          flexDirection: { xs: "column", md: "row" },
+          gap: 3,
+          alignItems: "flex-start",
+          minHeight: "80vh",
+        }}
+      >
+        <Box sx={{ flex: 1, width: { xs: "100%", md: "50%" } }}>
+          <TaskWorkspace mode="edit" initialTask={task} onSave={handleSave} />
+        </Box>
+        <TasksAiChatWidget taskId={task.id} />
+      </Box>
+    </Container>
   );
 }

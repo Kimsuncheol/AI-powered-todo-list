@@ -6,9 +6,22 @@ export interface Task {
   description: string;
   tags: string[];
   priority: Priority;
-  createdAt: string;
-  updatedAt: string;
+  createdAt: string; // ISO datetime
+  updatedAt: string; // ISO datetime
 }
 
 export type TaskSortKey = "createdAt" | "updatedAt" | "title";
 export type TaskSortOrder = "asc" | "desc";
+
+export interface TasksListOut {
+  data: Task[];
+  meta?: {
+    total?: number;
+    page?: number;
+    pageSize?: number;
+  };
+}
+
+export interface TaskEnvelope {
+  data: Task;
+}

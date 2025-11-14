@@ -13,12 +13,13 @@ import {
 import CodeMirror from "@uiw/react-codemirror";
 import ReactMarkdown from "react-markdown";
 import type { Task } from "@/types/task";
+import type { TaskCreatePayload, TaskUpdatePayload } from "@/lib/api/tasks";
 import { TaskPriorityRating } from "./TaskPriorityRating";
 
 interface Props {
   initialTask?: Partial<Task>;
   mode?: "create" | "edit";
-  onSave: (payload: Partial<Task>) => Promise<void>;
+  onSave: (payload: TaskCreatePayload | TaskUpdatePayload) => Promise<void>;
 }
 
 export function TaskWorkspace({ initialTask, mode = "create", onSave }: Props) {
@@ -69,7 +70,7 @@ export function TaskWorkspace({ initialTask, mode = "create", onSave }: Props) {
   };
 
   return (
-    <Stack gap={2}>
+    <Stack gap={2} sx={{height: "100%"}}>
       <TextField
         variant="standard"
         placeholder="Title"
@@ -134,13 +135,13 @@ export function TaskWorkspace({ initialTask, mode = "create", onSave }: Props) {
         </Button>
       </Box>
 
-      <Box sx={{ borderRadius: 1, border: "1px solid rgba(0,0,0,0.12)", minHeight: 260 }}>
+      <Box sx={{ borderRadius: 1, border: "1px solid rgba(0,0,0,0.12)", height: "80%" }}>
         {isPreview ? (
           <Box sx={{ p: 2 }}>
             <ReactMarkdown>{content}</ReactMarkdown>
           </Box>
         ) : (
-          <CodeMirror value={content} height="260px" onChange={(value) => setContent(value)} />
+          <CodeMirror value={content} height="80%" onChange={(value) => setContent(value)} />
         )}
       </Box>
 
