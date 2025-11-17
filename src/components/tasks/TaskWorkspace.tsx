@@ -16,6 +16,7 @@ import type { Task } from "@/types/task";
 import type { TaskCreatePayload, TaskUpdatePayload } from "@/lib/api/tasks";
 import { TaskPriorityRating } from "./TaskPriorityRating";
 import Add from "@mui/icons-material/Add";
+import CloseIcon from "@mui/icons-material/Close";
 
 interface Props {
   initialTask?: Partial<Task>;
@@ -59,6 +60,23 @@ export function TaskWorkspace({ initialTask, mode = "create", onSave }: Props) {
 
   const handleAddTagField = () => {
     setTags((prev) => [...prev, ""]);
+  };
+
+  const handleRemoveTagField = (index: number) => {
+    setTags((prev) => {
+      const next = prev.filter((_, idx) => idx !== index);
+      return next.length ? next : [""];
+    });
+  };
+
+  const handleTagBlur = (index: number) => {
+    setTags((prev) => {
+      const next = [...prev];
+      if (!next[index]?.trim()) {
+        next.splice(index, 1);
+      }
+      return next.length ? next : [""];
+    });
   };
 
   const handleSave = async () => {
@@ -116,16 +134,50 @@ export function TaskWorkspace({ initialTask, mode = "create", onSave }: Props) {
               placeholder="Add tag"
               value={tag}
               onChange={(event) => handleTagChange(index, event.target.value)}
+              onBlur={() => handleTagBlur(index)}
               onKeyDown={(event) => {
                 if (event.key === "Enter" && index === tags.length - 1) {
                   event.preventDefault();
                   handleAddTagField();
                 }
+                if (event.key === "Backspace" && !tag && tags.length > 1) {
+                  event.preventDefault();
+                  handleRemoveTagField(index);
+                }
+              }}
+              InputProps={{
+                sx: {
+                  minWidth: 120,
+                  maxWidth: 220,
+                  backgroundColor: tag ? "rgba(25,118,210,0.12)" : "transparent",
+                  borderRadius: 1,
+                  "& .MuiInputBase-input": {
+                    fontSize: 12,
+                    py: 0.5,
+                    color: "text.primary",
+                  },
+                  "& .MuiOutlinedInput-root": {
+                    "& fieldset": { border: "none" },
+                    "&:hover fieldset": { border: "none" },
+                    "&.Mui-focused fieldset": { border: "none" },
+                  },
+                  "&:hover": {
+                    backgroundColor: tag ? "rgba(25,118,210,0.16)" : "rgba(0,0,0,0.04)",
+                  },
+                },
+                endAdornment: tag ? (
+                  <IconButton
+                    size="small"
+                    onClick={() => handleRemoveTagField(index)}
+                    sx={{ position: "absolute", right: 0, mr: 0.5 }}
+                    aria-label={`Remove tag ${tag}`}
+                  >
+                    <CloseIcon fontSize="small" />
+                  </IconButton>
+                ) : undefined,
               }}
               sx={{
-                minWidth: 120,
-                maxWidth: 220,
-                "& .MuiInputBase-input": { fontSize: 12, py: 0.5 },
+                position: "relative",
               }}
             />
           ))}
@@ -152,12 +204,11 @@ export function TaskWorkspace({ initialTask, mode = "create", onSave }: Props) {
       <Box
         sx={{
           display: "flex",
-          justifyContent: "space-between",
+          justifyContent: "flex-end",
           alignItems: "center",
           gap: 2,
         }}
       >
-        <Typography variant="subtitle2">Content</Typography>
         <Button size="small" onClick={() => setIsPreview((prev) => !prev)}>
           {isPreview ? "Edit" : "Preview"}
         </Button>

@@ -105,6 +105,11 @@ export default function Header() {
             >
               Tasks
             </Button>
+            {/* {user.role === "admin" && (
+              <Button component={Link} href="/admin" variant="outlined" size="small">
+                Admin
+              </Button>
+            )} */}
             <Tooltip title={user.email} arrow>
               <IconButton
                 onClick={(event) => setAnchorEl(event.currentTarget)}
@@ -141,13 +146,18 @@ export default function Header() {
               >
                 Sign Out
               </MenuItem>
+              {user.role === "admin" && (
+                <MenuItem onClick={() => router.push('/admin')}>
+                  Admin
+                </MenuItem>
+              )}
             </Menu>
           </>
         ) : (
           !hideSearchAndCta && (
-          <Button component={Link} href="/signin" variant="text">
-            Sign in
-          </Button>
+            <Button component={Link} href="/signin" variant="text">
+              Sign in
+            </Button>
           )
         )}
       </Toolbar>

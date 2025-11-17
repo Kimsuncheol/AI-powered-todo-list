@@ -22,6 +22,7 @@ export function DevSignInButton() {
           tz: "Asia/Seoul",
           locale: "ko-KR",
           email_verified: true,
+          role: "admin",
         });
         router.push("/tasks");
       }}

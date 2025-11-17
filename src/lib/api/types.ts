@@ -44,6 +44,7 @@ export type UserSummary = {
   tz?: string;
   locale?: string;
   email_verified?: boolean;
+  role?: "admin" | "user";
 };
 
 export type AuthTokens = {
