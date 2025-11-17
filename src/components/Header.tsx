@@ -10,13 +10,21 @@ import {
   Menu,
   MenuItem,
   Tooltip,
+  Box,
 } from "@mui/material";
 import AccountCircleIcon from "@mui/icons-material/AccountCircle";
 import AddIcon from "@mui/icons-material/Add";
+import LightModeIcon from "@mui/icons-material/LightMode";
+import DarkModeIcon from "@mui/icons-material/DarkMode";
+import LaptopIcon from "@mui/icons-material/Laptop";
 import Link from "next/link";
 import { useRouter, usePathname } from "next/navigation";
 import SearchBar from "./SearchBar";
 import { useAuth } from "../lib/auth/useAuth";
+import {
+  AppearanceMode,
+  useAppearance,
+} from "../lib/appearance/AppearanceContext";
 import Image from "next/image";
 
 export default function Header() {
@@ -38,6 +46,28 @@ export default function Header() {
     router.push("/auth/signin");
   };
 
+  const { mode, resolvedMode, setMode } = useAppearance();
+
+  const handleToggleAppearance = () => {
+    const order: AppearanceMode[] = ["light", "dark", "system"];
+    const nextIndex = (order.indexOf(mode) + 1) % order.length;
+    setMode(order[nextIndex]);
+  };
+
+  const appearanceTooltip =
+    mode === "system"
+      ? "System appearance"
+      : `${mode.charAt(0).toUpperCase()}${mode.slice(1)} mode`;
+
+  const appearanceIcon =
+    mode === "system" ? (
+      <LaptopIcon />
+    ) : resolvedMode === "dark" ? (
+      <DarkModeIcon />
+    ) : (
+      <LightModeIcon />
+    );
+
   return (
     <AppBar position="sticky" elevation={0} color="default">
       <Toolbar sx={{ gap: 2 }}>
@@ -47,10 +77,22 @@ export default function Header() {
           aria-label="Navigate home"
           sx={{ color: "inherit" }}
         >
-          <Image src={'/logo.png'} alt="" width={100} height={50}/>
+          <Image src={"/logo.png"} alt="" width={100} height={50} />
         </IconButton>
 
         {!hideSearchAndCta && <SearchBar />}
+
+        <Box sx={{ flexGrow: 1 }} />
+
+        <Tooltip title={appearanceTooltip} arrow>
+          <IconButton
+            aria-label="Toggle appearance"
+            onClick={handleToggleAppearance}
+            sx={{ color: "inherit" }}
+          >
+            {appearanceIcon}
+          </IconButton>
+        </Tooltip>
 
         {user ? (
           <>

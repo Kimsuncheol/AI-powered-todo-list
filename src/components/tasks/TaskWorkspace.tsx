@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import {
   Box,
   Button,
-  Chip,
+  IconButton,
   Stack,
   TextField,
   Typography,
@@ -15,6 +15,7 @@ import ReactMarkdown from "react-markdown";
 import type { Task } from "@/types/task";
 import type { TaskCreatePayload, TaskUpdatePayload } from "@/lib/api/tasks";
 import { TaskPriorityRating } from "./TaskPriorityRating";
+import Add from "@mui/icons-material/Add";
 
 interface Props {
   initialTask?: Partial<Task>;
@@ -24,8 +25,9 @@ interface Props {
 
 export function TaskWorkspace({ initialTask, mode = "create", onSave }: Props) {
   const [title, setTitle] = useState(initialTask?.title ?? "");
-  const [tags, setTags] = useState<string[]>(initialTask?.tags ?? []);
-  const [tagInput, setTagInput] = useState("");
+  const [tags, setTags] = useState<string[]>(
+    initialTask?.tags?.length ? initialTask.tags : [""]
+  );
   const [priority, setPriority] = useState<number>(initialTask?.priority ?? 3);
   const [content, setContent] = useState(initialTask?.description ?? "");
   const [isPreview, setIsPreview] = useState(false);
@@ -33,34 +35,45 @@ export function TaskWorkspace({ initialTask, mode = "create", onSave }: Props) {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!initialTask) return;
+    if (!initialTask) {
+      setTitle("");
+      setTags([""]);
+      setPriority(3);
+      setContent("");
+      return;
+    }
+
+    const normalizedTags = initialTask.tags?.length
+      ? initialTask.tags
+      : [""];
+
     setTitle(initialTask.title ?? "");
-    setTags(initialTask.tags ?? []);
+    setTags(normalizedTags);
     setPriority(initialTask.priority ?? 3);
     setContent(initialTask.description ?? "");
   }, [initialTask]);
 
-  const handleAddTag = () => {
-    const trimmed = tagInput.trim();
-    if (trimmed && !tags.includes(trimmed)) {
-      setTags((prev) => [...prev, trimmed]);
-    }
-    setTagInput("");
+  const handleTagChange = (index: number, value: string) => {
+    setTags((prev) => prev.map((tag, idx) => (idx === index ? value : tag)));
   };
 
-  const handleRemoveTag = (tag: string) => {
-    setTags((prev) => prev.filter((item) => item !== tag));
+  const handleAddTagField = () => {
+    setTags((prev) => [...prev, ""]);
   };
 
   const handleSave = async () => {
     setSaving(true);
     setError(null);
     try {
+      const normalizedTags = tags
+        .map((tag) => tag.trim())
+        .filter((tag) => tag.length > 0);
+
       await onSave({
         title: title.trim(),
         description: content,
         priority: priority as Task["priority"],
-        tags,
+        tags: normalizedTags,
       });
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to save task");
@@ -70,7 +83,7 @@ export function TaskWorkspace({ initialTask, mode = "create", onSave }: Props) {
   };
 
   return (
-    <Stack gap={2} sx={{height: "100%"}}>
+    <Stack gap={2} sx={{ height: "100%" }}>
       <TextField
         variant="standard"
         placeholder="Title"
@@ -83,36 +96,51 @@ export function TaskWorkspace({ initialTask, mode = "create", onSave }: Props) {
         sx={{
           display: "flex",
           justifyContent: "space-between",
-          alignItems: "center",
+          alignItems: "start",
           gap: 2,
         }}
       >
-        <Box sx={{ display: "flex", flexWrap: "wrap", gap: 0.5 }}>
-          {tags.map((tag) => (
-            <Chip
-              key={tag}
-              label={tag}
+        <Box
+          sx={{
+            display: "flex",
+            flexWrap: "wrap",
+            gap: 1,
+            alignItems: "center",
+          }}
+        >
+          {tags.map((tag, index) => (
+            <TextField
+              key={`tag-field-${index}`}
               size="small"
-              onDelete={() => handleRemoveTag(tag)}
-              sx={{ fontSize: 10, height: 18 }}
+              variant="outlined"
+              placeholder="Add tag"
+              value={tag}
+              onChange={(event) => handleTagChange(index, event.target.value)}
+              onKeyDown={(event) => {
+                if (event.key === "Enter" && index === tags.length - 1) {
+                  event.preventDefault();
+                  handleAddTagField();
+                }
+              }}
+              sx={{
+                minWidth: 120,
+                maxWidth: 220,
+                "& .MuiInputBase-input": { fontSize: 12, py: 0.5 },
+              }}
             />
           ))}
-          <TextField
+          <IconButton
+            aria-label="add tag"
             size="small"
-            placeholder="Add tag"
-            value={tagInput}
-            onChange={(event) => setTagInput(event.target.value)}
-            onKeyDown={(event) => {
-              if (event.key === "Enter") {
-                event.preventDefault();
-                handleAddTag();
-              }
-            }}
+            onClick={handleAddTagField}
             sx={{
-              maxWidth: 160,
-              "& .MuiInputBase-input": { fontSize: 10, py: 0.5 },
+              border: "1px dashed rgba(0,0,0,0.2)",
+              width: 32,
+              height: 32,
             }}
-          />
+          >
+            <Add fontSize="small" />
+          </IconButton>
         </Box>
 
         <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
